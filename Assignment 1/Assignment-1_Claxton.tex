@@ -1,0 +1,268 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Fundamentals of ML\_Assignment 1\_Andrew Claxton},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Fundamentals of ML\_Assignment 1\_Andrew Claxton}
+\author{}
+\date{\vspace{-2.5em}2026-05-28}
+
+\begin{document}
+\maketitle
+
+Data source:
+\url{https://data.wa.gov/demographics/SADE-County-Population-by-Age-and-Sex/8ida-3myk/about_data}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"C:}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{Users}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{User}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{OneDrive}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{Desktop}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{Grad School\_Business Analytics}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{Fundamentals of ML}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{Assignment 1}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{SADE\_County\_Population\_by\_Age\_and\_Sex\_20260528.csv"}\NormalTok{)}
+
+\CommentTok{\#read the CSV}
+
+\FunctionTok{summary}\NormalTok{(df[, }\FunctionTok{c}\NormalTok{(}\StringTok{"County"}\NormalTok{, }\StringTok{"Sex"}\NormalTok{, }\StringTok{"Total.Population.2024"}\NormalTok{, }
+
+               \StringTok{"Total.Population.2023"}\NormalTok{, }\StringTok{"Total.Population.2025"}\NormalTok{)])}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     County              Sex            Total.Population.2024
+##  Length:1404        Length:1404        Min.   :    24.59    
+##  Class :character   Class :character   1st Qu.:   574.70    
+##  Mode  :character   Mode  :character   Median :  1738.60    
+##                                        Mean   :  5723.43    
+##                                        3rd Qu.:  4217.54    
+##                                        Max.   :112750.34    
+##  Total.Population.2023 Total.Population.2025
+##  Min.   :    23.71     Min.   :    24.06    
+##  1st Qu.:   570.71     1st Qu.:   579.99    
+##  Median :  1716.61     Median :  1760.77    
+##  Mean   :  5663.21     Mean   :  5779.98    
+##  3rd Qu.:  4164.82     3rd Qu.:  4293.80    
+##  Max.   :110838.03     Max.   :113688.38
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Print out descriptive statistics for a selection of the data}
+\end{Highlighting}
+\end{Shaded}
+
+\#This graph shows descriptive statistics for 5 of the 11 variables in
+data that captures population figures for counties in Washington State.
+The county is a character field containing the names of the counties.
+Sex contains either ``Male'' or ``Female''. Then there are three
+numerical columns for 2023, 2024, and 2025 population counts.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{df}\SpecialCharTok{$}\NormalTok{IsMale }\OtherTok{\textless{}{-}}\NormalTok{ df}\SpecialCharTok{$}\NormalTok{Sex }\SpecialCharTok{==} \StringTok{"Male"} 
+
+\CommentTok{\#Transform Sex column from character to boolean }
+
+\FunctionTok{summary}\NormalTok{(df[, }\FunctionTok{c}\NormalTok{(}\StringTok{"County"}\NormalTok{, }\StringTok{"IsMale"}\NormalTok{, }\StringTok{"Total.Population.2024"}\NormalTok{, }\StringTok{"Total.Population.2023"}\NormalTok{, }\StringTok{"Total.Population.2025"}\NormalTok{)]) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     County            IsMale        Total.Population.2024 Total.Population.2023
+##  Length:1404        Mode :logical   Min.   :    24.59     Min.   :    23.71    
+##  Class :character   FALSE:702       1st Qu.:   574.70     1st Qu.:   570.71    
+##  Mode  :character   TRUE :702       Median :  1738.60     Median :  1716.61    
+##                                     Mean   :  5723.43     Mean   :  5663.21    
+##                                     3rd Qu.:  4217.54     3rd Qu.:  4164.82    
+##                                     Max.   :112750.34     Max.   :110838.03    
+##  Total.Population.2025
+##  Min.   :    24.06    
+##  1st Qu.:   579.99    
+##  Median :  1760.77    
+##  Mean   :  5779.98    
+##  3rd Qu.:  4293.80    
+##  Max.   :113688.38
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Reprint descriptive statistics to check corrected column data types}
+\end{Highlighting}
+\end{Shaded}
+
+\#This is the same descriptive statistics, but now we have transformed
+the Sex column into a Boolean called ``IsMale'' containing an array of
+values that are equal to either TRUE or FALSE
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(}\FunctionTok{density}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{Total.Population}\FloatTok{.2025}\NormalTok{), }\AttributeTok{main =} \StringTok{"Density of Total Population 2025"}\NormalTok{, }\AttributeTok{xlab =} \StringTok{"Population"}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Assignment-1_Claxton_files/Assignment-1_Claxton_files/figure-latex/unnamed-chunk-3-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Plot at least one quantitative variable. In this case, a density plot of the Total.Population.2025 column}
+\end{Highlighting}
+\end{Shaded}
+
+\#This shows the density plot of values from the column containing total
+population from 2025. As you can easily see, there is a large amount of
+lower values and a long tail to the right. This is normal for population
+figures, where most counties will have a smaller number of occupants but
+a few will have much larger numbers of occupants.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{adams\_df }\OtherTok{\textless{}{-}} \FunctionTok{subset}\NormalTok{(df, County }\SpecialCharTok{==} \StringTok{"Adams"}\NormalTok{) }
+
+\CommentTok{\#create subset of rows with only Adams County }
+
+\NormalTok{adams\_df}\SpecialCharTok{$}\NormalTok{AgeRanges }\OtherTok{\textless{}{-}} \DecValTok{5} \SpecialCharTok{*}\NormalTok{ adams\_df}\SpecialCharTok{$}\NormalTok{Age.Sorting.Variable}\SpecialCharTok{{-}} \DecValTok{3} 
+
+\CommentTok{\#create new numeric column to turn the age sorting variable into a regular age (slightly reduces granularity of data, but useful for plotting) }
+
+\FunctionTok{plot}\NormalTok{(adams\_df}\SpecialCharTok{$}\NormalTok{AgeRanges, adams\_df}\SpecialCharTok{$}\NormalTok{Total.Population}\FloatTok{.2025}\NormalTok{, }\AttributeTok{xlab =} \StringTok{"Age (0{-}85+ years)"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"2025 Population"}\NormalTok{, }\AttributeTok{main =} \StringTok{"Adams County 2025 Population by Age"}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Assignment-1_Claxton_files/Assignment-1_Claxton_files/figure-latex/unnamed-chunk-4-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#plot scatter chart of Adams County 2025 population by Age }
+\end{Highlighting}
+\end{Shaded}
+
+\#This is a basic scatter plot showing the 2025 population figures by
+age group for only Adams county. The original data had age brackets with
+an age sorting variable to track ages groups (0-4, 5-9, 9-13, etc.). We
+converted this to a numerical value by using the middle value of those
+brackets, which loses some of the data's granularity but is useful for
+visualization
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{colorForGraph }\OtherTok{=} \FunctionTok{ifelse}\NormalTok{(df}\SpecialCharTok{$}\NormalTok{IsMale}\SpecialCharTok{==}\ConstantTok{TRUE}\NormalTok{, }\StringTok{"blue"}\NormalTok{, }\StringTok{"red"}\NormalTok{)}
+\CommentTok{\#establish variable for color coding male and female data points}
+
+\FunctionTok{plot}\NormalTok{(adams\_df}\SpecialCharTok{$}\NormalTok{AgeRanges, adams\_df}\SpecialCharTok{$}\NormalTok{Total.Population}\FloatTok{.2025}\NormalTok{, }\AttributeTok{xlab =} \StringTok{"Age (0{-}85+ years)"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"2025 Population"}\NormalTok{, }\AttributeTok{main =} \StringTok{"Adams County 2025 Population by Age"}\NormalTok{, }\AttributeTok{col=}\NormalTok{colorForGraph) }
+
+\FunctionTok{legend}\NormalTok{(}\StringTok{"topright"}\NormalTok{,}
+       \AttributeTok{legend =} \FunctionTok{c}\NormalTok{(}\StringTok{"Male"}\NormalTok{, }\StringTok{"Female"}\NormalTok{),}
+       \AttributeTok{col =} \FunctionTok{c}\NormalTok{(}\StringTok{"blue"}\NormalTok{, }\StringTok{"red"}\NormalTok{),}
+       \AttributeTok{pch =} \DecValTok{16}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\pandocbounded{\includegraphics[keepaspectratio]{Assignment-1_Claxton_files/Assignment-1_Claxton_files/figure-latex/unnamed-chunk-5-1.pdf}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#reprint scatter plot with colors and a legend.}
+\end{Highlighting}
+\end{Shaded}
+
+\#This is the same scatter plot with males and females color coded to
+give better clarity to the population totals. Thank You!
+
+\end{document}

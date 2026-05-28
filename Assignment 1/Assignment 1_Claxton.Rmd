@@ -1,0 +1,68 @@
+---
+title: "Fundamentals of ML_Assignment 1_Andrew Claxton"
+output:
+  word_document: default
+  pdf_document: default
+date: "2026-05-28"
+---
+Data source: https://data.wa.gov/demographics/SADE-County-Population-by-Age-and-Sex/8ida-3myk/about_data
+```{r}
+df <- read.csv("C:\\Users\\User\\OneDrive\\Desktop\\Grad School_Business Analytics\\Fundamentals of ML\\Assignment 1\\SADE_County_Population_by_Age_and_Sex_20260528.csv")
+
+#read the CSV
+
+summary(df[, c("County", "Sex", "Total.Population.2024", 
+
+               "Total.Population.2023", "Total.Population.2025")])
+
+#Print out descriptive statistics for a selection of the data
+```
+#This graph shows descriptive statistics for 5 of the 11 variables in data that captures population figures for counties in Washington State. The county is a character field containing the names of the counties. Sex contains either "Male" or "Female". Then there are three numerical columns for 2023, 2024, and 2025 population counts. 
+```{r}
+df$IsMale <- df$Sex == "Male" 
+
+#Transform Sex column from character to boolean 
+
+summary(df[, c("County", "IsMale", "Total.Population.2024", "Total.Population.2023", "Total.Population.2025")]) 
+
+#Reprint descriptive statistics to check corrected column data types
+```
+#This is the same descriptive statistics, but now we have transformed the Sex column into a Boolean called "IsMale" containing an array of values that are equal to either TRUE or FALSE
+```{r}
+plot(density(df$Total.Population.2025), main = "Density of Total Population 2025", xlab = "Population") 
+
+#Plot at least one quantitative variable. In this case, a density plot of the Total.Population.2025 column
+```
+
+#This shows the density plot of values from the column containing total population from 2025. As you can easily see, there is a large amount of lower values and a long tail to the right. This is normal for population figures, where most counties will have a smaller number of occupants but a few will have much larger numbers of occupants.
+
+```{r}
+adams_df <- subset(df, County == "Adams") 
+
+#create subset of rows with only Adams County 
+
+adams_df$AgeRanges <- 5 * adams_df$Age.Sorting.Variable- 3 
+
+#create new numeric column to turn the age sorting variable into a regular age (slightly reduces granularity of data, but useful for plotting) 
+
+plot(adams_df$AgeRanges, adams_df$Total.Population.2025, xlab = "Age (0-85+ years)", ylab = "2025 Population", main = "Adams County 2025 Population by Age") 
+
+#plot scatter chart of Adams County 2025 population by Age 
+```
+#This is a basic scatter plot showing the 2025 population figures by age group for only Adams county. The original data had age brackets with an age sorting variable to track ages groups (0-4, 5-9, 9-13, etc.). We converted this to a numerical value by using the middle value of those brackets, which loses some of the data's granularity but is useful for visualization
+
+```{r}
+colorForGraph = ifelse(df$IsMale==TRUE, "blue", "red")
+#establish variable for color coding male and female data points
+
+plot(adams_df$AgeRanges, adams_df$Total.Population.2025, xlab = "Age (0-85+ years)", ylab = "2025 Population", main = "Adams County 2025 Population by Age", col=colorForGraph) 
+
+legend("topright",
+       legend = c("Male", "Female"),
+       col = c("blue", "red"),
+       pch = 16)
+
+#reprint scatter plot with colors and a legend.
+```
+#This is the same scatter plot with males and females color coded to give better clarity to the population totals. Thank You!
+
