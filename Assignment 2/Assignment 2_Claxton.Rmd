@@ -1,0 +1,190 @@
+---
+title: "Assignment 2 - Andrew Claxton"
+output: pdf_document
+date: "2026-06-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(caret)
+library(class)
+library(gmodels)
+```
+
+
+```{r}
+Bankdf <- read.csv("C:\\Users\\User\\OneDrive\\Desktop\\Grad School_Business Analytics\\Fundamentals of ML\\Assignment 2\\UniversalBank-1.csv")
+
+Bankdf$ID <- NULL
+Bankdf$ZIP.Code <- NULL   #drop ID and ZIP code from the data frame
+
+Bankdf$Education <- factor(
+  Bankdf$Education,
+  levels = c(1, 2, 3),
+  labels = c("Undergrad", "Graduate", "Advanced")
+)
+#convert education to a factor
+
+dummy_model<-dummyVars(~Education, data=Bankdf) #model for creating dummy variables from Education column
+
+edu.dummy<- predict(dummy_model, newdata = Bankdf) #make a new data frame with the dummy variables (in this case graduate and advanced as 1’s or 0’s. Undergraduate is represented by 0’s in both of those fields)
+
+Bankdf <- cbind(Bankdf, edu.dummy) #Add the edu.dummy data frame (two columns) to the master data frame. The new column names are Education.Graduate and Education.Advanced. dummyVars named them as such because the original education column was a factor with labels (levels) in the original data. You can check that with levels(Bankdf$Education)
+
+Bankdf$Education <- NULL #Drop the original categorical education field
+
+```
+Here we read our CSV, dropped irrelevant variables, converted Education to a factor, and then transformed the Education variable into dummy variables
+
+```{r}
+set.seed(1) #seed for reproducibility
+train.index <- createDataPartition(Bankdf$Personal.Loan, p = 0.6, list = FALSE) #stratified sampling based off the target variable We took 60% of the indexes for training
+train.df <- Bankdf[train.index, ] #create training data frame from those indexes (randomly selected row numbers). “,” just means all columns
+valid.df <- Bankdf[-train.index, ] #create the validation data frame from the indexes that were not in the training index
+norm.values <- preProcess(
+    train.df[, -which(names(train.df) == "Personal.Loan")],
+    method = c("center", "scale")
+) #creating a model to normalize using Z-score. This normalization model is only training on the training data frame. preProcess automatically detects if a column is numeric. If so this model will normalize it. If not, it skips it, so it won’t try to normalize factors, characters. ***If the target variable was numeric, we would need to remove it from the training data frame and put it in it’s own variable before we normalize.
+train.norm.df <- predict(norm.values, train.df) #create a new data frame of normalized training data by applying the normalization model to the training data frame
+valid.norm.df <- predict(norm.values, valid.df) #same as above. New data frame created with normalized values from a model that was trained on the training data.
+
+```
+We then create a data partition with 60% allocated for training and 40% allocated for validation. We normalized both training and validation data sets using z-score normalization (based on the training data)
+
+```{r}
+target.customer <- data.frame( Age = 40, Experience = 10, Income = 84, Family = 2, CCAvg = 2, Education.Graduate = 1, Education.Advanced = 0, Education.Undergrad = 0, Mortgage = 0, Securities.Account = 0, CD.Account = 0, Online = 1, CreditCard = 1) #Create a one row data frame with a hypothetical customer to try to determine the class.
+target.customer.norm <- predict(norm.values, target.customer) #normalize the variables for the target customer the same way we did before. Again this normalization model was trained on the training data
+knn.pred <- knn(
+  train = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+  test = target.customer.norm,
+  cl = train.norm.df$Personal.Loan,
+  k = 1
+)
+# we train on our normalized test data frame using all columns except the variable we want to predict which is why we did [, -which(names(train.norm.df) == "Personal.Loan")].
+#our test data frame is the one we just created for the target customer. It is also normalized
+# cl or class labels tells the model which column to look for the possible outcomes of the class of the new point (in this case a 0 or a 1 for the personal loan column)
+#k=1 means we are looking for the single nearest neighbor. 
+knn.pred #The knn() function will return a vector of predictions (0 or 1 dictated by the cl) against our test data set (target customer). Because our test data set above was a data frame with a single row, there is only one number in knn.pred
+
+```
+Question #1: The k-nn model with a k value of 1 predicted that the hypothetical customer's nearest neighbor in our test set was not likely to accept a loan offer. In other words, our model predicted that this customer will not convert from liability to asset.  
+
+```{r}
+accuracy <- rep(0, 14)
+for (i in 1:14) {
+  knn.pred <- knn(
+    train = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+    test = valid.norm.df[, -which(names(valid.norm.df) == "Personal.Loan")],
+    cl = train.norm.df$Personal.Loan,
+    k = i
+  )
+  
+  accuracy[i] <- mean(knn.pred == valid.norm.df$Personal.Loan)
+}
+
+accuracy.df <- data.frame(k = 1:14, accuracy = accuracy)
+
+#Make a vector called accuracy with 14 values all equal to zero. Iterate through “i” in 1:14 trying a different k value (equal to “i”) each time, then assigning that row of accuracy to the average of correct predictions (1 for TRUE and 0 for FALSE). The last line in the for loop works because we are comparing all of the model’s predictions against all of the actual values in our validation data frame and then averaging them. 
+#we plug all of that into a new data frame called accuracy.df. We can plot it or just print it and look at the rows. 
+accuracy.df
+```
+Question #2: We iterated through the model capturing accuracy values for each iteration as we changed the k value from 1 through 14. The choice of k that balances between overfitting and ignoring the predictor information is K=3. 
+
+```{r}
+
+knn.best <- knn(
+  train = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+  test = valid.norm.df[, -which(names(valid.norm.df) == "Personal.Loan")],
+  cl = train.norm.df$Personal.Loan,
+  k = 3
+)
+
+CrossTable(
+  x = valid.norm.df$Personal.Loan,
+  y = knn.best,
+  prop.chisq = FALSE
+)
+
+```
+Question 3: This is the confusion matrix for the validation data that results from using the best k. Our model using the best k (3) resulted in 63 false negatives and 9 false positives out 2000 predictions.
+
+```{r}
+best.knn.pred <- knn(
+  train = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+  test = target.customer.norm,
+  cl = train.norm.df$Personal.Loan,
+  k = 3
+)
+best.knn.pred
+#Rerun the knn() function using our same normalized training data frame against the same target customer from before, but this time we use the best k value 
+```
+Question #4: After running the k-nn model against the target customer but now with the best k value (3), the model still finds the target customer's three nearest neighbors to have a majority label of NOT likely to accept a loan. Therefore, the model predicts that the target customer will NOT accept a loan either. This is reasonable, as only 9.6% of customers in the original data set accepted the loan.
+
+```{r}
+set.seed(1)
+# 50% training
+train.index <- createDataPartition(Bankdf$Personal.Loan, p = 0.5, list = FALSE)
+train.df <- Bankdf[train.index, ]
+temp.df  <- Bankdf[-train.index, ]
+# 30% validation (.5x.6 = .3)
+valid.index <- createDataPartition(temp.df$Personal.Loan, p = 0.6, list = FALSE)
+valid.df <- temp.df[valid.index, ]
+test.df  <- temp.df[-valid.index, ]
+#First get the index of 50% of the data and set the train.df data frame to rows with that index. Take the remaining 50% of indexes and retrieve a number of rows equal to 30% of the entire number of rows. Finally set the test index to whatever we did not use for valid.index to make it equal to 20% of the total, and then assign that to a data frame test.df
+predictor.cols <- setdiff(names(train.df), "Personal.Loan")
+
+norm.values <- preProcess(
+  train.df[, predictor.cols],
+  method = c("center", "scale")
+)
+
+train.norm.df <- predict(norm.values, train.df)
+valid.norm.df <- predict(norm.values, valid.df)
+test.norm.df  <- predict(norm.values, test.df)
+#normalize using only the training data set, then create new data frames for all three subsets 
+#Now run knn on all three sets
+train.pred <- knn(
+  train = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+  test  = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+  cl    = train.norm.df$Personal.Loan,
+  k     = 3
+)
+#knn from training to predict outcome of training. 
+valid.pred <- knn(
+  train = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+  test  = valid.norm.df[, -which(names(valid.norm.df) == "Personal.Loan")],
+  cl    = train.norm.df$Personal.Loan,
+  k     = 3
+)
+#knn from training to validation. 
+test.pred <- knn(
+  train = train.norm.df[, -which(names(train.norm.df) == "Personal.Loan")],
+  test  = test.norm.df[, -which(names(test.norm.df) == "Personal.Loan")],
+  cl    = train.norm.df$Personal.Loan,
+  k     = 3
+)
+#knn from training to test
+
+```
+We then re-partitioned the data into a 50/30/20% split. After that, we normalized the data subsets.Then we ran k-nn functions for each of the test sets using the best k value (3)
+
+```{r}
+# Training
+CrossTable(train.norm.df$Personal.Loan, train.pred, prop.chisq = FALSE)
+# Validation
+CrossTable(valid.norm.df$Personal.Loan, valid.pred, prop.chisq = FALSE)
+# Test
+CrossTable(test.norm.df$Personal.Loan, test.pred, prop.chisq = FALSE)
+
+```
+Question #5: These are the three cross-tables for the training, validation, and test data. The model against the training data achieved accuracy of 97.6%. The model against the validation data achieved 96.8% accuracy. The model against the test data achieved 96.1% accuracy.
+
+The accuracy from the training data was expected to be very high because this is the data we used as the reference points.
+
+The accuracy from the validation data was expected and did indeed drop slightly because the model is trying to find nearest neighbors on unseen data. Accuracy was still  high because although the partition is different, we have already performed tuning to find the best k
+
+The accuracy on the test data dropped slightly further than the validation set. This is the generalized performance on unseen data. Inaccuracies are the result of overfitting on the training data. 
+
