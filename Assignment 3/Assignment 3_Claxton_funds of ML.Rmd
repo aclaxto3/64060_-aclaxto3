@@ -1,0 +1,117 @@
+---
+title: "Assignment 3_Claxton_funds of ML"
+output: pdf_document
+date: "2026-06-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+library(caret)
+library(reshape)
+library(e1071)
+library(gmodels)
+```
+```{r}
+bank.df<-read.csv("C:\\Users\\User\\OneDrive\\Desktop\\Grad School_Business Analytics\\Fundamentals of ML\\Assignment 3\\UniversalBank-1.csv")
+#read CSV and save as dataframe
+
+bank.df <- bank.df[, c("Online", "CreditCard", "Personal.Loan")] 
+#reduce variables to Online, CC, and Personal.Loan
+
+bank.df$Online <- factor(bank.df $Online, levels = c(0,1)) 
+
+bank.df$CreditCard     <- factor(bank.df $CreditCard,     levels = c(0,1)) 
+
+bank.df$Personal.Loan   <- factor(bank.df $Personal.Loan,   levels = c(0,1)) 
+#convert to factors
+
+set.seed(123)
+#set seed
+
+```
+
+```{r}
+# Stratified partition: 60% training 
+
+train_index <- createDataPartition(bank.df $Personal.Loan, p = 0.6, list = FALSE) 
+
+train <- bank.df [train_index, ] 
+
+valid <- bank.df [-train_index, ] 
+
+train$dummy <- 1 
+
+train_melt <- melt(train, 
+
+                   id.vars = c("CreditCard", "Online", "Personal.Loan"), 
+
+                   measure.vars = "dummy") 
+#create data partition, establish train and test
+#use melt() to convert data into long form
+pivot_A <- cast(train_melt, 
+  CreditCard + Personal.Loan ~ Online, 
+  fun.aggregate = sum, 
+  value = "value")
+#Use case to create the pivot tale. 
+#Aggregate and value are just counting rows
+pivot_A
+```
+Part A: This is the pivot table with credit card and personal loan on the rows with online as a column variable
+Part B: Consider a customer who owns a credit card and uses online banking. Looking at the pivot table, the probability of this customer accepting a private loan (based on the training data) is 51/(467+51) = 0.098.
+
+```{r}
+# (Part C) Pivot tables for Loan as a function of Online 
+
+pivot_LoansByOnline <- table(train$Personal.Loan, train$Online) 
+
+pivot_LoansByOnline 
+
+# Pivot table for loan as a function of CC 
+
+pivot_LoansByCC <- table(train$Personal.Loan, train$CreditCard) 
+
+pivot_LoansByCC 
+```
+Part C: These two pivot tables depict (from top to bottom) Loan as a function of Online status and Loan as a function of Credit Card status.
+
+Part D:
+P(CreditCard = 1 | Loan = 1) = 0.29
+P(Online=1 | Loan=1) = 0.61
+P(Loan = 1) 0.10
+P(CreditCard=1 |Loan = 0) = 0.29
+P(Online=1 | Loan = 0) = .59
+P(Loan=0) = .90
+
+Part E: Compute the Naive Bayes probability = Probability of accepting a loan when the user has a credit card and uses online banking -> P(Loan=1 |CreditCard=1, Online=1) -> Loan =1  / Loan=0 + Loan = 1 -> .29 * .61 * .1 / ((.29 * .61 * .1)+(.29 * .59 * .90)) = 0.103
+
+Part G: What components do we need? We need all of the components of the table because we need the probabilities to compute Naive Bayes
+```{r}
+nb_model <- naiveBayes(Personal.Loan ~ CreditCard + Online, data = train) 
+
+nb_model 
+
+#Conditional probabilities for Online | Personal.Loan and CC
+# | Personal.Loan should match the answers from part D 
+
+new_customer <- data.frame( 
+
+  CreditCard = factor(1, levels = c(0,1)), 
+
+  Online = factor(1, levels = c(0,1))) 
+
+#create the new customer 
+
+pred_probs <- predict(nb_model, new_customer, type = "raw") 
+
+pred_probs 
+
+#predict the class of the new customer 
+#using the naiveBayes model 
+
+#This should match part E and NOT part B 
+```
+This matches our calculations for part E because we manually calculated probabilities using Naive Bayes methodology. It does *NOT match exactly to part B because those probabilities were derived from empirical observations from the training data. 
