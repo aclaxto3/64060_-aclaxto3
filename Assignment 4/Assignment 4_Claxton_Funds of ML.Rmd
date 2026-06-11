@@ -1,0 +1,79 @@
+---
+title: "Assignment 4_Claxton_Funds ML"
+output: pdf_document
+date: "2026-06-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(caret)
+library(flexclust)
+library(factoextra)
+library(tidyverse)
+pharm.df <- read.csv("C:\\Users\\User\\OneDrive\\Desktop\\Grad School_Business Analytics\\Fundamentals of ML\\Assignment 4\\Pharmaceuticals.csv")
+#load libraries and read csv
+```
+```{r}
+pharm.df <- pharm.df[, 2:11]
+row.names(pharm.df) <- pharm.df[,1]
+pharm.df <- pharm.df[,-1]
+#reduce rows to numerical variables
+#make the names variable the names of the rows
+#then drop that column
+pharm.df <- scale(pharm.df)
+#Normalize the data (z-score)
+```
+We have modified the dataset by using the name column to name the rows, reducing the columns to only the numerical variables, and normalizing the data
+
+```{r}
+set.seed(123)
+fviz_nbclust(pharm.df, kmeans, method = "wss")
+#set the seed
+#Elbow method using within-cluster
+#sum of squares
+```
+The elbow method indicates that the optimal number of clusters is 2 or 3.
+
+```{r}
+fviz_nbclust(pharm.df, kmeans, method = "silhouette")
+#Average silhouette method
+```
+Question #1: The silhouette method clearly points to the optimal number of clusters as 2. We have no external consideration driving our choice of the number of nodes. Because the elbow method showed gradual reduction of within-cluster sum of squares between k=2 and k=3 with no clear best option, and the silhouette method directly measures cluster cohesion and separation, we will continue with a 2 cluster solution.
+
+All variables are weighted equally after z-score normalization. Without that, variables with higher maximums would dominate the distance calculations.
+
+As for the distance metric, we will proceed with Euclidean distances. This choice was made because all of the contributing variables are continuous numerical measures, and after standardization, will all contribute to distances equally. 
+
+```{r}
+pharmCluster = kmeans(pharm.df, centers = 2, nstart = 25)
+#cluster using euclidean, k=2
+
+pharmCluster
+
+
+fviz_cluster(pharmCluster, data = pharm.df)
+#clusters kept flipping places
+#between 1 and 2 hence the ifelse statements
+```
+Question #2: We produced two clusters of sizes 11 and 10 companies. Cluster 1 outperformed their cluster 2 counterparts in most of the conventional performance metrics. Looking at the cluster means, cluster 1 had larger average market capitalization, ROE, ROA, net profit margin, and asset turnover. cluster 2 also had lower average leverage and beta which indicates stronger financial positions than cluster 2. Cluster 1 companies had a lower PE ratio and revenue growth than cluster 2 companies, which could indicate a split between established companies and more rapidly growing companies. Cluster 1 likely consists of very large and established companies with very secure position in the market while cluster 2 likely represents smaller sized companies that are less financially secure but potential for benefitial PE ratio and growth potential. 
+
+
+```{r}
+pharm.full <- read.csv("C:\\Users\\User\\OneDrive\\Desktop\\Grad School_Business Analytics\\Fundamentals of ML\\Assignment 4\\Pharmaceuticals.csv")
+
+pharm.full$Cluster <- pharmCluster$cluster
+#attach cluster labels to the original data
+
+table(pharm.full$Cluster, pharm.full$Location)
+
+table(pharm.full$Cluster, pharm.full$Exchange)
+
+table(pharm.full$Cluster, pharm.full$Median_Recommendation)
+```
+Question #3: We did observe some patterns in the unused variables. All companies in cluster 1 were in the NYSE, while cluster 2 had entries in the NASDAQ and AMEX. There was also a geographic pattern, with cluster 1 companies having proportionally more companies in the U.S. and U.K., while cluster 2 companies were more distributed. The cluster 1 companies also had a larger proportion of companies in the "hold" or "moderate buy" categories compared to cluster 2 companies. This indicates that stock analyst recommendations are generally more favorable for cluster 1 companies. 
+
+Question #4: Based on everything discussed previously, I would name cluster 1 "Pharmaceutical Market Leaders" and cluster 2 "Mid-sized and lower Pharmaceutical Companies". This is based largely off the features we gleaned from the cluster means.
+
