@@ -1,0 +1,175 @@
+---
+title: "Assignment 5_Claxton_Funds of ML"
+output: pdf_document
+date: "2026-06-13"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(caret)
+library(stats)
+library(cluster)
+```
+```{r}
+library(dplyr)
+```
+
+```{r}
+
+Cereals <- read.csv("C:\\Users\\User\\OneDrive\\Desktop\\Grad School_Business Analytics\\Fundamentals of ML\\Assignment 5\\Cereals.csv")
+colSums(is.na(Cereals))
+#look for missing values
+```
+```{r}
+CerealNum <- Cereals %>%
+  select(-name, -mfr, -type) %>%
+  na.omit()
+#remove rows with missing
+CerealNum <- Cereals %>%
+  select(-name, -mfr, -type)
+#only keeping numeric
+CerealNorm <- scale(CerealNum)
+#normalize
+```
+
+```{r}
+ag.single <- agnes(CerealNorm,
+  metric = "euclidean", method = "single")
+#single 
+ag.complete <- agnes(CerealNorm,
+  metric = "euclidean",
+  method = "complete")
+#complete
+ag.average <- agnes(CerealNorm,
+  metric = "euclidean",
+  method = "average")
+#average
+ag.ward <- agnes(CerealNorm,
+  metric = "euclidean",
+  method = "ward")
+#ward
+ag.single$ac
+ag.complete$ac
+ag.average$ac
+ag.ward$ac
+#print aglomerative coefficients 
+```
+
+
+Question #1: After running hierarchal clustering using single, complete, average, and ward linakges, ward has the strongest aglomerative coefficient measure
+```{r}
+plot(ag.ward, which.plots = 2)
+#plot dendrogram
+#this will tell us how many clusters
+#to choose. We are looking at the
+#height to determine where the big jump is
+#because height is = differences between clusters
+```
+```{r}
+pltree(ag.ward)
+
+rect.hclust(as.hclust(ag.ward), k = 3, border = "red")
+rect.hclust(as.hclust(ag.ward), k = 4, border = "blue")
+rect.hclust(as.hclust(ag.ward), k = 5, border = "green")
+#Note to self: when we choose a height, we are drawing 
+#a horizontal line. The number of vertical lines
+#that horizontal line crosses is the number of 
+#categories
+```
+```{r}
+hc <- as.hclust(ag.ward)
+
+for(k in 2:8){
+  cat("\nK =", k, "\n")
+  print(table(cutree(hc, k)))
+}
+#show the population of clusters for 
+#various k values
+```
+Question 2: I am selecting to use 5 clusters. Based off the dendrogram, this is where the greatest differences between clusters starts to emerge (based off the changes in height). This K value will avoid both overfitting and over-generalization. It also has reasonably balanced cluster sizes.
+```{r}
+set.seed(123)
+
+train.index <- createDataPartition(
+  1:nrow(CerealNorm),
+  p = 0.5,
+  list = FALSE
+)
+
+train.cereal.norm <- CerealNorm[train.index, ]
+test.cereal.norm  <- CerealNorm[-train.index, ]
+#create data partition
+```
+
+```{r}
+ag.train <- agnes(
+  train.cereal.norm,
+  metric = "euclidean",
+  method = "ward")
+
+hc.train <- as.hclust(ag.train)
+
+cluster.train <- cutree(hc.train, k = 5)
+#clustering our training data
+```
+
+```{r}
+train.df <- as.data.frame(train.cereal.norm)
+
+centroids <- aggregate(
+  train.df,
+  by = list(cluster = cluster.train),
+  mean
+)
+#measure the centroids from training data
+centroids
+```
+```{r}
+centroid.matrix <- as.matrix(centroids[, -1])
+test.matrix <- as.matrix(test.cereal.norm)
+#Get the euclidean distance from each
+#point in test subset to the centroids from
+#train set
+ag.full <- agnes(
+  CerealNorm,
+  method = "ward")
+
+hc.full <- as.hclust(ag.full)
+
+cluster.full <- cutree(hc.full, k = 5)
+```
+
+```{r}
+distance.matrix <- as.matrix(
+  dist(rbind(centroid.matrix, test.matrix)))
+#distance matrix containing centroid
+#to centroid, test to centroid,
+#and test to test
+```
+
+```{r}
+test.centroid.distances <-
+  distance.matrix[
+  (nrow(centroid.matrix)+1):nrow(distance.matrix),
+  1:nrow(centroid.matrix)]
+#measure distances from test to centroid
+```
+
+```{r}
+test.assign <- apply(
+  test.centroid.distances,
+  1, which.min)
+#assign test data to each centroid
+```
+
+```{r}
+full.test <- cluster.full[-train.index]
+table(test.assign, full.test)
+mean(test.assign == full.test)
+```
+Question #3: The clusters of the test set had only 10.8% agreement with the HC model on the full data set. This is much lower than I expected and indicates an error in the calculation. After researching, I suspect there may be a labeling issue but I'm not quite sure how to resolve it.
+
+
+Question #4: Normalization would not be good if we are trying to cluster cereals by health benefits. Calories, sugar, protein, and fiber are all important attributes and should retain their original scale for cluster analysis. This way, cereals higher in fat, sugar, calories, etc will be grouped together and those higher in fiber and protein will fall into a different (healthy) cluster. Of course the key to this is parameter selection and model evaluation. 
